@@ -1,0 +1,128 @@
+\chapter{Introduction}
+\label{ch:intro}
+
+This thesis is structured as follows. Chapters~\ref{ch:intro} through~\ref{ch:conclusion} are centered around a guiding case study in Chapter~\ref{ch:atrds}, which contains the main technical contributions. In the appendices, further details and background are provided, but there are less specific contributions in those chapters. It is also possible that an excessive amount of detail was included in some chapters, though it should be mostly contained within the appendices. However, that was somewhat intentional, because this work was intended to be mostly self-contained, beyond assuming some general background in probability and statistics. With that being said, we will now introduce the problem we will be working with.
+
+\section{Problem Overview}
+\label{sec:intro-overview}
+
+The National Airspace System (NAS) overseen by the Federal Aviation Administration (FAA) connects nearly 20,000 airports across the United States, servicing as many as over 45,000 flights and 2.9 million passengers every day \cite{faa_numbers_2024}. Unfortunately, such a large-scale system naturally has the potential for similarly large-scale failures. One example of a rare, but severe failure event was the 2022 Southwest Airlines scheduling crisis, systemic operational failures across the air traffic network during Winter Storm Elliott led to the cancellation of 16,900 flights, stranding over 2 million passengers and resulting in over 740 million USD total losses and regulatory fines \cite{dot_penalizes_2023}. On the other end of the spectrum, more commonly occurring, but moderate failures pose a significant challenge as well. Busier airports such as Newark and LaGuardia (LGA) reported nearly 30,000 significant individual flight delays in 2022 alone, with the vast majority directly or indirectly caused by weather conditions \cite{faa_faq_2024}.
+
+Understanding these failure modes is important to ensuring the robustness of the overall system under challenging conditions. Retrospective analyses of past failure events can provide greater insight in understanding why certain failures happened in the past, and serve as a predictive tool in designing strategies to prevent or mitigate similar failures in the future \cite{michael_peng_probing_2024}. As a complement, predictive analyses to generate examples of potential failure events are also important, so that we may also study new types of failures that may not have appeared in historical data \cite{parashar2024learning}. 
+
+To this end, we aim to both develop a probabilistic framework for modeling the complex hierarchical relationships between weather conditions and observed flight delays throughout the network, and a set of methods to analyze and predict failure modes in these models, to support future efforts in designing prevention or recovery strategies, as well as other problems that may share similar structure. Additionally, we also aim to separate weather induced delays from other sources, especially in separating failures into repairable and irreparable components.
+
+\section{Problem Formulation}
+\label{sec:intro-formulation}
+
+First, motivated by previous literature \cite{michael_peng_probing_2024, dawson2025rare}, we develop a general Bayesian treatment of the air traffic problem. Because air traffic can be modeled as a networked, stochastic, directional system, it is natural to develop an abstract probabilistic graphical model representation, which allows us to apply existing statistical inference techniques.
+
+In particular, we generalize from our air traffic setting to a general two-stage Bayesian hierarchical model \cite{Allenby_Rossi_McCulloch_2005}, depicted in \cref{fig:wzx-basic}. When specializing to the air traffic case, we interpret $\rz$ as some latent parameters of the network, that we will study in more detail later, following a distribution conditioned on $\rw$.
+
+\begin{figure} [htb!]
+    \centering
+    % feel free to improve this i don't actually know how to use this
+    \tikz{
+        % nodes
+        \node[obs] (x) {$\rx$};%
+        \node[latent,left=of x, xshift=-1cm] (z) {$\rz$} ; %
+        \node[obs,left=of z, xshift=-.4cm] (w) {$\rw$}; 
+        \node[obs,above=of z, yshift=-.5cm,] (y) {$\ry$}; 
+        % Factors
+        \factor[left=of x, xshift=-.5cm] {z-x} {below:$\pld{x\given z;y,a}$} {} {} ; %
+        \factor[left=of z, xshift=-.2cm] {w-z} {below:$\pld{z\given w}$} {} {} ; %
+
+        \node[latent,above=of z-x, yshift=-.2cm,] (a) {$\ra$}; 
+
+        \factoredge {w} {w-z} {z} ; %
+        \factoredge {y,z,a} {z-x} {x} ; %
+
+    }
+    \caption{A two-stage hierarchical model, with context and action variables included.}
+    \label{fig:wzx-basic}
+\end{figure}
+
+Here, we consider $x$ to be observations of a stochastic process $\rx\sim \pld{x\given \rz;y}$, with $\rz\sim \pld{z\given w}$, where $\theta$ are process parameters shared across all samples, $y$ is a known context variable for $\rx$, and $w$ can be considered as a known hyperparameter when interpreting $\pld{z\given w}$ as a prior distribution for $\rz$. Here, we also require that all variables are real-valued. Additionally, when studying autonomous systems, it may make sense to separate out part of the latent or context variable into a separate variable, $\ra$, depending on if it is known or not, which represents the actions taken by the controller in some way, e.g. relevant controller parameters, or even just the actions themselves. Not depicted are the potential parents for the $\ra$ node in that case, as it may vary, e.g. whether or not it is independent of $\ry$ and $\rw$. Similarly, it may be observed or latent, depending on the particular application.
+
+In the context of the air traffic problem, we could roughly say that $x$ are the observed flight times, $y$ are the scheduled flight times, $\ra$ is all traffic management strategies deployed, and $w$ are weather conditions, where a single observation $x^{(i)},y^{(i)},w^{(i)},a^{(i)}$ constitutes the data for one day. A proof of concept for this application already completed is presented in \cref{sec:atrds-single-airport}.
+
+Retrospective analysis, or modeling of past failure events, can then be considered a Bayesian inverse problem \cite{stuart2010inverse}, where the goal is to infer the posterior distribution $\pld{z\given x,w;y}$, using historical data for $x,y,w$. Here, knowing $\theta$ is not a necessity, as it is reasonable to learn from the data, i.e. fitting your model $\pld{\cdot}$ to an existing dataset $\Data = \{x^{(i)},y^{(i)},w^{(i)}\}_{i=1}^N$. After this is done, the learned model parameters $\theta$ and posterior for latent $z$ can be used to build a generative model for the full joint distribution.
+
+Predictive analysis, on the other hand, does require that $\pld{\cdot}$ is already known, i.e. none of $\theta$ has to be learned, whether that be from using values obtained from previously performing retrospective analysis, or by just fully specifying a model to begin with. However, $y$ and $w$ no longer have to be specified, depending on what exactly is being studied. For example, in the air traffic setting, the problem of finding weather conditions likely to lead to a given severity of delays on a hypothetical day with a specified schedule and traffic management strategy would be framed as maximizing the posterior likelihood
+\begin{equation}
+    \label{eq:example-prediction-integral}
+    \pld{w\given x\in \Omega; y,a}
+    =\int_{\RR} \pld{w\given z}\pld{z\given x\in\Omega;y,a} \,dz
+    =\int_{\RR}\int_{\Omega} \pld{w\given z}\pld{z\given x;y,a} \,dx\,dz,
+\end{equation}
+where $\Omega$ is the set of $x$ values of interest. In this particular case, we chose to fix $\{x,y,a,\theta\}$, vary $\{w\}$, and marginalize over $\{z\}$, but it is also straightforward to consider other partitions of variables. For example, we could instead choose to fix $w$ and vary $y$, which would correspond to the complementary problem of finding schedules that are likely to lead to a given severity of delays on a hypothetical day with specified weather conditions and response. There are some restrictions, however. For example, we can only meaningfully marginalize over $\{z\}$ or $\varnothing$, unless a prior distribution for at least one of $\ry$ or $\rw$ is assumed. We will examine these in more detail in \cref{sec:intro-variants}. 
+
+The difference between these variants is not necessarily extremely major on its own mathematically, and is largely a distinction on purpose. For example, by retrospective analysis here, we are mostly referring to using existing data on all available observed components of the model to help fit the model to the data, while in predictive analysis, we are interested in using a learned model to learn something when specifying values for some parts of it, which may also require fitting the model in the first place.
+
+After reformulating our generalized problem, we may instead directly work with the hierarchical model from \cref{fig:wzx-basic} to apply general statistical methods, and consider the air traffic problem as just one specific application of our process. 
+
+
+\section{Problem Variants}
+\label{sec:intro-variants}
+
+For completeness, we include a breakdown of different variants of the general hierarchical problem outlined in \cref{sec:intro-formulation}. We can count the number of variants by placing each of $x,y,z,w,a,\theta$ into one of three sets: fix, vary, or marginalize, which we will denote here as $\ms F$, $\ms V$, and $\ms M$, respectively. For simplicity, we will ignore the possibility of partially observed nodes. Therefore, roughly speaking, our goal is to learn 
+\begin{equation}
+    \pd{\ms V \given \ms F} = \int \pd{\ms V, \ms M\given \ms F} \,d\ms M.
+\end{equation}
+
+It does not make much sense to marginalize out $x$, $a$, or $\theta$ in our case, so those may only be fixed or varied. Similarly, if no prior distribution for $\ry$ or $\rw$ is assumed, then we should also only fix or vary $y$ and $w$, otherwise, they may go into any of the three sets like $z$ can. Thus, we have $2^5\times 3=96$ variants without any priors on $\ry$ and $\rw$, $2^4\times 3^2=144$ variants when only one has a prior, and $2^3\times 3^3=216$ variants when both do. While this gives an idea of the flexibility of the approach, in practice we might only be primarily interested in a limited number of classes of variants, some of which we outline below in the context of the air traffic problem.
+
+\subsection{Retrospective Modeling}
+\label{subsec:intro-variants-retrospective}
+
+In retrospective modeling, we assume that we are given a historical dataset $\Data$ for $x,y,w$ and wish to determine the posterior distribution for $z,a$. If $a$ is observed, the analysis still follows similarly. When $\theta$ is known, i.e. the parameters of our model $\pld{\cdot}$ is already fully specified, we only wish to infer $\pld{z,a\given x,y,w}$. When $\theta$ is not known, we will also need to maximize $\pld{\Data}$. It is also possible to impose a prior on $\theta$ as well and compute $\pld{\theta\given\Data}$, but that is not our current focus. In the language of the air traffic problem, we are specifying a model parameterized by $\theta$ that describes the operations of the air traffic network under weather conditions, and attempting to fit this model to historical daily data of actual and scheduled flight times, and weather information. This can be useful for learning a model which can then be used to make predictions or gain a better understanding of past events.
+
+In practice, however, directly computing $\pld{z,a\given x,y,w}$ may be intractable or even impossible, which is an issue we will discuss in \cref{background-approximate-inference}. For now, however, we will make the simplifying assumption that we have access to any marginals or posteriors of the overall joint distribution $\pld{\cdot}$ needed.
+
+\subsection{Predictive Modeling}
+\label{subsec:intro-variants-predictive}
+
+In predictive modeling, we assume that we have already put together a model $\pld{\cdot}$, where $\theta$ is known, and are interested in $\pld{x\given y, w, a}$, where $y,w,a$ are specified. It is also possible to only specify a subset of $\{y,w,a\}$, in which case marginalizing out the missing variables would be required. In the language of the air traffic problem, we are interested in what our learned model predicts, when providing the scheduled flight times, the weather conditions, and traffic management strategy as an input, and receiving the corresponding distribution of predicted actual flight times as an output. This can be useful for evaluating how well different strategies or schedules perform under various weather conditions.
+
+\subsection{Test Case Generation}
+\label{subsec:intro-variants-generation}
+
+For test case generation, we also require a fully specified model $\pld{\cdot}$, which we hope to use to find conditions that are likely to elicit a certain outcome, such as a failure event. Specifically, we assume that $x$ is specified, sometimes as a region $\Omega$ that encompasses multiple values, $a$ is specified, and either $y$ or $w$ is specified. Then, we wish to find $w$ that achieve high posterior likelihood $\pld{w\given x,y,a}$, and vice versa if we wish to find $y$. In the language of the air traffic problem, we provide a desired set of actual flight times, for example, those where delays are above some threshold, along with a flight schedule and traffic management strategy, and wish to generate some adversarial weather conditions. This information can then be used to help improve the design of the strategy and schedule.
+
+When we are only interested in the most adversarial conditions, this is similar to maximum a posteriori (MAP), which, in the case of an uniform prior, is equivalent to maximum likelihood estimation (MLE). \cite{efron_hastie_2016}. However, inferring the full posterior can still be useful in generating more diverse test cases.
+
+
+\section{Parametrization}
+\label{sec:intro-param}
+
+While we have only written a single $\theta$ here, it is important to note that the allocation between the two components, such as $\pld{x\given z;y}$ and $\pld{z\given w}$, may vary, as we will later see in \cref{ch:atrds}. In some cases, we may even see that one part is already fully specified, in which case we are only using it to help learn the remaining parameters for the other part. Similarly, it is possible to use a model that is already fully specified in both parts, in which case we are focused solely on inference as we do not need to learn anything about the model parameters. The main takeaway is that it may not be up to us to decide this, and so it is desirable to be able to easily adapt our methods around whatever is provided to us.
+
+
+\section{Data Constraints}
+\label{sec:intro-constraints}
+
+For modeling and prediction, we are often interested in failure events which occur much less often than nominal events, which is reflected in the data available. Because of this, we will often see specialized methods used to help deal with the lack of data available, which is discussed further in \cref{ch:lit-review}. This is generally different from the issue of just having imbalanced data in the full dataset, and more just the issue of not having enough data at all, without introducing additional assumptions, such as the nominal distribution being related to the failure distribution somehow. Therefore, we must also include the caveat that methods we use to combat this issue are only applicable when operating under the particular assumptions, which can be seen as overfitting to a particular class of problems. However, this is still useful if we are confident that a problem in question belongs to that class, so we will focus on introducing these assumptions in principled ways.
+
+
+\section{Latent Space}
+\label{sec:intro-latent}
+
+We will consider the hierarchical model from \cref{sec:intro-formulation} again, but this time only on the $\rw\to\rz\to\rx$ part, ignoring $\ry$ temporarily. First, let us focus on what we have available, which is a dataset $\Data$ with paired observations $(x,w)$. We can roughly categorize the construction of the latent intermediate variable $\rz$ into two categories.
+
+\subsection{Generic Design}
+\label{subsec:intro-latent-artificial}
+
+One approach is to treat the paired observations $(x,w)$ in a similar manner to a generative model formulation where it is assumed that we have samples from some observed, but unknown distribution for $\rx, \rw$, and introduce flexibility and uncertainty into our model through a completely artificial latent variable $\rz$. The goal is to learn $\pld{z\given x,w}$ is specified, which is accomplished by simultaneously learning $\pld{x,w\given z}$ and an approximation for the posterior $\qvd{z\given x,w}$. This simplifies the problem of approximately sampling from the true joint distribution $\ptd{x,w}$, because the forms of $\qvd{z\given x,w}$ and $\pld{x,w\given z}$ can be specified to be easier to deal with. Additionally, the distribution $\pd{z}$ describing the probabilistic latent space is also typically chosen to be simpler to sample from, such as a multivariate normal distribution, so that generating new samples from $\ptd{x,w}$ may be done by simply sampling from $\pd{z}$ and using the learned $\pld{x,w\given z}$. An alternative formulation is to learn $\pld{x\given z}$ and $\qvd{z\given w}$, or the other way around, which proceed similarly, and may be more relevant to the particular structure we are interested in.
+
+However, there are a few potential issues. One is that no matter which of the aforementioned approaches we use, even with the additional specialization, we still do not end up learning a complete generative model. With the $(\rx,\rw)\to \rz\to (\rx,\rw)$ variant, we have now learned $\pld{x,y}$, which, in the air traffic problem, for instance, would allow us to generate new samples of realistic weather conditions and corresponding flight delays. Unfortunately, $\pld{w\given x}$ would still require computing the marginal $\pld{y}$, as we will discuss in \cref{background-approximate-inference}, which is not feasible in general, and similarly, this variant also does not readily yield $\pld{x\given w}$. With the specialized $\rw \to \rz\to \rx$ variant, we learn an approximation for $\pld{x\given w}$, which would only help with the predictive task of evaluating the effect of different weather conditions on observed flight delays. Analogously, with the $\rx\to \rz\to \rw$ variant, we learn an approximation for $\pld{w\given x}$, which would only help with the retrospective task of understanding what weather conditions would lead to a given severity of delay. Because we are interested in a complete generative model of the joint distribution for weather and delays, and extracting conditional distributions of both weather and delays from that, we need a common methodology to incorporate all of these techniques together. This is simpler to address, because we can just combine multiple variants, as we will see in \cref{ch:atrds}.
+
+The second problem is deeper, and closely related to the choice of probabilistic latent space. Loosely speaking, because the true observed data distribution can be very complicated, and the artificial latent distribution is chosen to be much simpler and usually analytically tractable, all of the flexibility of the model is concentrated in whatever mechanism is used to bridge the gap between the two. In problems where the data distribution is the main focus of the model, such as the field of image generation where generative models are popular, these choices make sense, because the latent distribution is not necessarily of particular interest on its own and only exists to support the rest of the model. We will discuss this further in \cref{related-generative-modeling}. However, this means that it is difficult to gain interpretable insight from the latent space alone, and the bridges between the latent and data distributions may also difficult to interpret in a standalone setting.
+
+\subsection{Domain Specific}
+\label{subsec:intro-latent-natural}
+
+Furthermore, in our problem of understanding the effects of weather disruptions on air traffic, we often have very natural choices of latent variables that would be a natural intermediate step between weather and delay observations. For example, in the real world, weather effects influence certain parameters of different parts of the air traffic network, such as arrival and departure capacities at busy airports, which then go on to cause delays, but these latent parameters are unlikely to have a simple underlying distribution.
+
+Additionally, the trade-off between complexity of the latent distribution and complexity of the model, which together account for the complexity of the data distribution, means that a simple latent space and complex model would require large amounts of data for training. However, when data is limited, decreasing the complexity of the learned component of the model becomes necessary, which would mean allowing the latent distribution to become more complex, or simplifying the model itself. In real-world settings where system dynamics can be modeled, leveraging accurate simulations to reduce the amount of complexity the learned part of the model must account for on its own effectively reduces parts of the problem to only learning the residuals unaccounted for by imperfect, but reasonably accurate simulation dynamics, so that less data is required for training the learned components. This is discussed further in \cref{related-sbi}. Furthermore, integration of the learned generative model with an interpretable simulation, and parameters of the simulation as the latent variables, means that the results will be immediately interpretable and more easily validated compared to a full black box model where the artificial latent space and related learned distributions may not have a particularly natural real-world interpretation.
+
+For the air traffic problem, because the scenario itself is already extremely complex, and it is natural to use simulations of the relevant dynamics in existing studies, we can achieve decent results using the natural option with the limited data available, which is discussed further in \cref{ch:atrds}. 

@@ -1,0 +1,237 @@
+% \newcommand{\vocab}[1]{\textit{#1}}
+\newcommand{\phantomeq}{\phantom{{}={}}}
+
+% \newcommand{\given}{\mid}
+\newcommand{\given}{|}
+% \DeclareMathDelimiter{\given}
+%   {\mathbin}{symbols}{"6A}{largesymbols}{"0C}
+\DeclarePairedDelimiter\pars{\lparen}{\rparen}
+\DeclarePairedDelimiter\spars{[}{]}
+
+\newcommand{\EX}[2]{\mathbb E_{#1}\spars*{#2}}
+\newcommand{\PR}[2]{\mathbb P_{#1}\pars*{#2}}
+
+\newcommand{\VaR}[2]{\mathsf{VaR}_{#1}\pars*{#2}}
+\newcommand{\TVaR}[2]{\mathsf{TVaR}_{#1}\pars*{#2}}
+\newcommand{\VaRd}[1]{\VaR{#1}{\cdot}}
+\newcommand{\TVaRd}[1]{\TVaR{#1}{\cdot}}
+
+\newcommand{\eVaR}[2]{\widehat{\mathsf{VaR}}_{#1}\pars*{#2}}
+\newcommand{\eTVaR}[2]{\widehat{\mathsf{TVaR}}_{#1}\pars*{#2}}
+
+
+% \DeclareMathOperator{\proj}{proj}
+\DeclareMathOperator{\TV}{TV}
+% \DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\KL}{KL}
+% \DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\SD}{SD}
+
+\DeclarePairedDelimiterX{\infdivx}[2]{(}{)}{%
+  #1\;\delimsize\|\;#2%
+}
+\newcommand{\DKL}{D_{\KL}\infdivx}
+% \DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
+
+\newcommand{\vv}[1]{\boldsymbol{#1}} % for vector
+
+
+% random variable (sans serif)
+\newcommand{\rz}{\mathsf z}
+\newcommand{\ry}{\mathsf y}
+\newcommand{\rx}{\mathsf x}
+\newcommand{\rw}{\mathsf w}
+\newcommand{\ra}{\mathsf a}
+
+% vector random variable (sans serif, bold)
+\newcommand{\vrz}{\vv{\mathsf z}}
+\newcommand{\vry}{\vv{\mathsf y}}
+\newcommand{\vrx}{\vv{\mathsf x}}
+\newcommand{\vrw}{\vv{\mathsf w}}
+
+% vector r.v. sample (serif, bold)
+\newcommand{\vsz}{\vv{z}}
+\newcommand{\vsy}{\vv{y}}
+\newcommand{\vsx}{\vv{x}}
+\newcommand{\vsw}{\vv{w}}
+
+\newcommand{\Fxdinv}[1]{F_{\rx}^{-1}\pars*{#1}}
+
+\newcommand{\Fd}[1]{F\pars*{#1}}
+\newcommand{\Fdd}{\Fd{\cdot}}
+\newcommand{\Sd}[1]{S\pars*{#1}}
+\newcommand{\Sdd}{\Sd{\cdot}}
+\newcommand{\Qd}[1]{Q\pars*{#1}}
+\newcommand{\Qdd}{\Qd{\cdot}}
+
+\newcommand{\Fgd}[2]{F_{#1}\pars*{#2}}
+\newcommand{\Sgd}[2]{S_{#1}\pars*{#2}}
+\newcommand{\Qgd}[2]{Q_{#1}\pars*{#2}}
+
+\newcommand{\rs}[1]{\rho\pars*{#1}}
+\newcommand{\rsd}{\rs{\cdot}}
+\newcommand{\rsg}[2]{\rho_{#1}\pars*{#2}}
+\newcommand{\rsgd}[1]{\rho_{#1}\pars*{\cdot}}
+
+\newcommand{\pd}[1]{p\pars*{#1}}
+\newcommand{\pgd}[2]{p_{#1}\pars*{#2}}
+\newcommand{\pgdh}[2]{\hat{p}_{#1}\pars*{#2}}
+% ptd = true distribution, pld = learned distribution, ped = empirical dist
+\newcommand{\ptd}[1]{p^{\star}\pars*{#1}}
+\newcommand{\pld}[1]{\pgd{\theta}{#1}}
+\newcommand{\ped}[1]{\hat{p}\pars*{#1}}
+
+\newcommand{\pxd}[1]{\pgd{\rx}{#1}}
+\newcommand{\pyd}[1]{\pgd{\ry}{#1}}
+\newcommand{\Fxd}[1]{\Fgd{\rx}{#1}}
+\newcommand{\Fyd}[1]{\Fgd{\ry}{#1}}
+\newcommand{\Sxd}[1]{\Sgd{\rx}{#1}}
+\newcommand{\Syd}[1]{\Sgd{\ry}{#1}}
+\newcommand{\Qxd}[1]{\Qgd{\rx}{#1}}
+\newcommand{\Qyd}[1]{\Qgd{\ry}{#1}}
+
+\newcommand{\ptds}[1]{p^{\star}_{#1}}
+\newcommand{\plds}[1]{p_{#1; \theta}}
+\newcommand{\peds}[1]{\hat{p}_{#1}}
+\newcommand{\ptdd}{\ptd{\cdot}}
+\newcommand{\pldd}{\pld{\cdot}}
+\newcommand{\pedd}{\ped{\cdot}}
+
+\newcommand{\pxdd}{\pxd{\cdot}}
+\newcommand{\pydd}{\pyd{\cdot}}
+\newcommand{\Fxdd}{\Fxd{\cdot}}
+\newcommand{\Fydd}{\Fyd{\cdot}}
+\newcommand{\Sxdd}{\Sxd{\cdot}}
+\newcommand{\Sydd}{\Syd{\cdot}}
+\newcommand{\Qxdd}{\Qxd{\cdot}}
+\newcommand{\Qydd}{\Qyd{\cdot}}
+
+\newcommand{\pdd}{\pd{\cdot}}
+
+\newcommand{\tyz}{\theta_{\ry\given \rz}}
+\newcommand{\tzw}{\theta_{\rz\given \rwt}}
+\newcommand{\tww}{\theta_{\rwt\given \rw}}
+
+\newcommand{\pldyz}{\pld{y\given z}}
+\newcommand{\pldzw}{\pld{z\given w}}
+\newcommand{\pgdyz}{\pgd{\tyz}{y\given z}}
+\newcommand{\pgdzw}{\pgd{\tzw}{z\given w}}
+
+% qvd, rvd are the q, r variational distributions
+\newcommand{\qvn}{q_{\phi}}
+\newcommand{\rvn}{r_{\varphi}}
+% \newcommand{\qvd}[1]{\qvn\pars*{#1 \given y, w}}
+% \newcommand{\rvd}[1]{\rvn\pars*{#1 \given y}}
+\newcommand{\qvd}[1]{\qvn\pars*{#1}}
+\newcommand{\rvd}[1]{\rvn\pars*{#1}}
+
+\newcommand{\qgd}[2]{q_{#1}\pars*{#2}}
+\newcommand{\qgdh}[2]{\hat{q}_{#1}\pars*{#2}}
+
+\newcommand{\qvdz}{\qvd{z}}
+\newcommand{\rvdw}{\rvd{w}}
+
+\newcommand{\qvdd}{\qvd{\cdot}}
+\newcommand{\qvddd}{\qvd{\cdot,\cdot}}
+\newcommand{\rvdd}{\rvd{\cdot}}
+
+\newcommand{\qvds}{q_{\rz, \rwt \given y, w; \phi}}
+\newcommand{\rvds}{r_{\rw \given y; \varphi}}
+
+% \newcommand{\fvn}{f_{\alpha}}
+% \newcommand{\svn}{s_{\beta}}
+% \newcommand{\fvd}[1]{\fvn\pars*{#1}}
+% \newcommand{\svd}[2]{\svn\pars*{#1 ; #2}}
+
+% \newcommand{\fvdd}{\fvd{\cdot}}
+% \newcommand{\svdd}[1]{\svd{\cdot}{#1}}
+
+\newcommand{\fvn}{f_{\nu}}
+\newcommand{\gvn}{g_{\gamma}}
+\newcommand{\svn}{s_{\psi}}
+\newcommand{\fvd}[1]{\fvn\pars*{#1}}
+\newcommand{\gvd}[1]{\gvn\pars*{#1}}
+\newcommand{\svd}[1]{\svn\pars*{#1}}
+
+% evidence lower bound (objective)
+\newcommand{\elbo}[2]{\mathcal L_{#1}\pars*{#2}}
+\newcommand{\Data}{\mathcal D}
+
+\newcommand{\elbori}{\elbo{r}{\varphi, \theta, \Data}}
+\newcommand{\elboqi}{\elbo{q}{\phi, \theta, \Data}}
+\newcommand{\elborsi}{\elbo{r}{\varphi, \theta, y}}
+\newcommand{\elboqsi}{\elbo{q}{\phi, \theta, y, w}}
+
+\newcommand{\elbor}{\elbo{r}{\varphi, \phi, \theta, \Data}}
+\newcommand{\elboq}{\elbo{q}{\phi, \theta, \Data}}
+\newcommand{\elbors}{\elbo{r}{\varphi, \phi, \theta, y}}
+\newcommand{\elboqs}{\elbo{q}{\phi, \theta, y, w}}
+\newcommand{\elboropt}[1]{\elbo{r}{\varphi, \hat\phi^{(#1)}, \theta, \Data}}
+\newcommand{\elboqopt}[1]{\elbo{q}{\phi, \hat\theta^{(#1)}, \Data}}
+
+
+\newcommand{\jzcomment}[1]{\textbf{\textcolor{magenta}{#1}}}
+% \newcommand{\todo}{\jzcomment{TODO!!!}}
+\newcommand{\citethis}{\jzcomment{CITE!!!}}
+
+\newcommand{\wthcf}{w_{\mathrm{th};c,f}}
+\newcommand{\wthvf}{w_{\mathrm{th};v,f}}
+
+\newcommand{\wthcg}{w_{\mathrm{th};c,g}}
+\newcommand{\wthvg}{w_{\mathrm{th};v;g}}
+\newcommand{\xth}{x_{\mathrm{th}}}
+\newcommand{\yth}{y_{\mathrm{th}}}
+
+% note to self: actually consolidate things at some point
+
+% \renewcommand{\familydefault}{\sfdefault}
+% \renewcommand{\sfdefault}{cmbr}
+% \renewcommand{\ttdefault}{cmtl}
+\usepackage{lmodern}
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+
+
+\usepackage{mleftright}
+\usepackage{bm}
+
+\numberwithin{equation}{section}
+\newcommand\numberthis{\refstepcounter{equation}\tag{\theequation}} % for numbering in  the align* environment
+
+\usepackage{algpseudocode}
+\usepackage{adjustbox}
+
+\newcommand\includeplot[1]{\begin{minipage}[t]{\linewidth}
+          \raggedright
+          \adjustbox{valign=t}{%
+            \includegraphics[width=.9\linewidth]{#1}%
+          }
+          \medskip
+    \end{minipage}}
+
+\usepackage{listings}
+
+\newcommand{\bff}{\textbf{\textsf{\textit{f}}}}
+\newcommand{\ff}{\mathsf{\emph f}\,}
+\newcommand{\fff}{\mathsf{\emph f}\,}
+
+\newcommand{\numberr}{\mathsf{number}}
+\newcommand{\serial}{\mathsf{serial}}
+\newcommand{\rank}{\mathsf{rank}}
+
+% \setlength{\parskip}{4pt}
+% \AddToHook{cmd/section/before}{\clearpage}
+
+\usepackage{todonotes}
+\newcommand{\jztodo}[1]{\todo[color=pink!33,inline]{\textbf{TODO:} #1}}
+\setlength {\marginparwidth }{2cm}
+
+
+
+\newcommand{\CALNF}{\textsc{CalNF}}
+% \def\CALNF{%
+%     $\text{\normalsize{C}\footnotesize{AL}\normalsize{NF}}$}
+\newcommand{\vone}{\mathbf{1}}
+\newcommand{\vzero}{\mathbf{0}}

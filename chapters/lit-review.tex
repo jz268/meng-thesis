@@ -1,0 +1,34 @@
+\chapter{Literature Review}
+\label{ch:lit-review}
+
+We present a brief overview of related work, which can be roughly divided into two parts. The first is methods pertaining to the statistical aspect of our problem, and the second is methods specifically focused on the air traffic problem, and some other potential applications with similar structure.
+
+\section{Rare Event Analysis}
+
+There has been much work in failure prediction and sampling in simulation, such as \cite{pmlr-v211-delecki23a} and \cite{pmlr-v229-dawson23a}, which frame learning the distribution of failure trajectories as an approximate Bayesian inference problem and leverage differentiable simulation for faster convergence, as well as without simulation, such as \cite{Asghar2024EfficientRE}, which uses unsupervised normalizing flows to enhance Monte Carlo sampling. 
+
+While there has been less done in rare event modeling so far, one important work that is particularly relevant to the work in this proposal is \cite{dawson2025rare}, in which Dawson et al. develop a self-regularized normalizing flows framework for learning failure posteriors, which builds upon the ideas of prior regularization \cite{abdollahzadeh2023surveygenerativemodelinglimited} and bootstrapping. Specifically, they allow the nominal data to help regularize the limited failure data and develop a bootstrapping inspired approach to share information between the learned model components, to mitigate overfitting. 
+
+\section{Generative Modeling}
+\label{related-generative-modeling}
+
+Architectures for generative models have grown in popularity in recent years, such as variational autoencoders (VAEs) \cite{kingma2022autoencodingvariationalbayes,li2024deep, chevrot2022cae}, normalizing flows \cite{papamakarios2021normalizing}, and diffusion models \cite{yang2023diffusion}, and have been utilized across various domains with complex data such as image generation \cite{doersch2016tutorial}, biology \cite{guo2023diffusionmodelsbioinformaticsnew}, and autonomous systems \cite{xu2023diffscene}. Generative modeling has also been applied to learn approximate failure distributions from observations \cite{yue2023gan,pinto2023deep}. However, discussed in \cref{subsec:intro-latent-artificial}, these techniques have some limitations that may be untenable in our use case, as they require a large amount of data for training, and lack physical interpretability in their latent spaces. Because of this, we first more directly leverage variational inference \cite{hoffman2013stochastic} in our proof of concept.
+
+
+\section{Using Domain Knowledge}
+\label{related-sbi}
+
+As discussed in \cref{subsec:intro-latent-natural}, carefully constructing the latent space based on domain can be helpful in building the overall model. Simulation-based Inference (SBI) is a related field, which develop methods to incorporate information from simulations of the underlying dynamics into statistical inference techniques \cite{cramer_sbi_2020, gloeckler2024allinonesimulationbasedinference}. These focus mainly on likelihood-free methods, to accommodate a wider range of distributions. Similarly, physics-informed learning develops methods to integrate knowledge of physical laws as partial differential equations (PDEs) for the problem at hand into the learning process \cite{hao2023physicsinformedmachinelearningsurvey, Karniadakis_Kevrekidis_Lu_Perdikaris_Wang_Yang_2021}. Both of these types of methods follow the same goal as in our case, where we wish to use domain knowledge about the underlying distribution of our dataset which is not evident from just looking at the data itself.
+
+
+\section{Air Traffic Applications}
+
+While not comprehensive, we also discuss some prior work specific to the air traffic problem, to understand the gap we are trying to fill with our work. Most prior work focuses on individual parts of the problem, such as modeling the impact of weather on GDPs using support vector machines (SVM) and logistic regression \cite{liu_modeling_2020}, or predicting the impact of weather on air traffic flow using a multi-modal long short-term memory (LSTM) attention-based network \cite{ZENG2024102935}. On the traffic network side, much work has been done in developing simulations, such as \cite{PYRGIOTIS201360}, though most are not differentiable and do not have likelihoods. We also differ in that we are working with the whole model together, and in that we use Bayesian methods, so that we also have all of those associated benefits, such as having uncertainty quantification built in. While there has also been work for modeling everything from weather to the observed outcome and factors in between, such as \cite{enea_analysis_2024} and \cite{reitmann_advanced_2019}, these similarly do not allow us to easily learn posteriors or build a generative model that can be leveraged for other goals.
+
+
+\section{Related Applications}
+\label{related-applications}
+
+For completeness, we also list a few alternative problems that can be modified to fit a similar hierarchical structure to that of the air traffic weather problem, if they do not already. These have simulations available, which we can also attempt to re-implement as a differentiable probabilistic program, if desired, or apply likelihood-free methods to. Many of these models are also simpler to implement than the air traffic model, and have been well studied separately, so they may be easier to evaluate techniques with as an initial step. These alternative applications include parameterizing gravitational wave population \cite{ruhe2022normalizingflowshierarchicalbayesian}, seismic waveform inversion \cite{gouveia1998swi}, spread of infectious diseases \cite{trostle2022gaussianprocessapproximationspatialsir}, and calibrating stochastic radio channel propagation models \cite{bharti2022radio}.
+
+

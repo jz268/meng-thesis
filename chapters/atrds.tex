@@ -1,0 +1,33 @@
+\chapter{Guiding Case Study: LaGuardia}
+\label{ch:atrds}
+
+This chapter will contain the primary technical contribution of the thesis. Here, we will perform a guiding case study that will serve as both a proof of concept and motivation for further directions of study, which will we begin to explore in \cref{app:atm}, \cref{app:risk}, and \cref{app:shrinkage}. It is also important to note that it is a simplified proof of concept that may seem over-complicated at first, for the simple scenario. However, this is done intentionally to show how we would develop more complex methods for this use case, which may be necessary background for future work such as moving our problem up from tabular weather data to weather image or video generation.
+
+\section{Overview}
+
+As a proof of concept for the general proposed study, we consider a simplified model of the relationship between weather and delays at LaGuardia Airport (LGA), and provide a demonstration of simultaneously inferring the posterior distribution of the latent parameters and fitting our model to historical data. We use stochastic variational inference (SVI), as introduced in \cref{background-variational-inference}, to learn an approximation for the posterior, and develop a simple form of amortized inference to demonstrate how it can be used for failure prediction and test case generation. 
+
+\section{Single Airport Problem}
+\label{sec:atrds-single-airport}
+\input{chapters/atrds/sap}
+
+\section{Toy Example -- Two Moons}
+\label{sec:atrds-moons}
+\input{chapters/atrds/moons}
+
+\section{Theoretical Development}
+\label{sec:atrds-theory}
+\input{chapters/atrds/theory}
+
+\section{Implementation Details}
+\label{sec:atrds-implementation}
+\input{chapters/atrds/implementation}
+
+\section{Results and Discussion}
+\label{sec:atrds-results}
+\input{chapters/atrds/results}
+
+\section{Summary}
+\label{sec:atrds-summary}
+
+In this chapter, we developed a guiding case study on weather and delays at LGA. First, we analyzed weather and schedule data along with observed delays to motivate both the choice of weather variables and inclusion of both weather and schedule data, as opposed to just weather data. Then, we developed an amortized variational inference based framework for simultaneously clustering data points into meaningful groups and learning representatives posteriors for each group, and showed via implementation that our learned generative model can produce useful predictive results.

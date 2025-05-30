@@ -1,0 +1,30 @@
+For learning the individual posteriors $\svd{z\given x;c,y}$ for each $(x,y,w)\in\Data$ and $c\in \{0,1\}$, we use Pyro's SVI library \cite{bingham2019pyro}, to smoothly integrate with our air traffic simulation which is implemented as a probabilistic model in the same language. We use a multivariate Gaussian distribution as the variational family, automatically transformed to fit a positivity constraint we place on the mean service time $z$ in the probabilistic program.
+
+For learning $\qvd{z;c,d}$, we use a conditional normalizing flow as the variational family. Specifically, we use the neural spline flow architecture \cite{durkan2019neural} with $3$ stacked transforms, and $2$ hidden layers of $16$ units each, using a Rectified Linear Unit (ReLU) activation. The context dimension for conditioning is $5$, where the first four entries represent a one-hot encoding for $d$ through each combination of the $d_x$ and $d_y$ components, and the fifth entry is the $d_w$ component, given by $\gvn$. In other words, we transform the 3-dimensional label $d$ to a 5-dimensional label $\widetilde{d}$, only for training the normalizing flow to encourage further decoupling of the clusters, as show in \cref{tab:d-training-labels}.
+% \begin{align}
+%     d = (0,0,d_w)&\implies (1,0,0,0,d_w)=\widetilde{d},\\
+%     d = (0,1,d_w)&\implies (0,1,0,0,d_w)=\widetilde{d},\\
+%     d = (1,0,d_w)&\implies (0,0,1,0,d_w)=\widetilde{d},\\
+%     d = (1,1,d_w)&\implies (0,0,0,1,d_w)=\widetilde{d}.
+% \end{align}
+
+\begin{table}[htb]
+    \centering
+    \begin{tabular}{c||c}
+        $d$ & $\widetilde{d}$ \\
+        \hline\hline
+        $(0,0,d_w)$ & $(1,0,0,0,d_w)$ \\
+        \hline
+        $(0,1,d_w)$ & $(0,1,0,0,d_w)$ \\
+        \hline
+        $(1,0,d_w)$ & $(0,0,1,0,d_w)$ \\
+        \hline
+        $(1,1,d_w)$ & $(0,0,0,1,d_w)$ \\
+    \end{tabular}
+    \caption{Corresponding training label $\widetilde{d}$ for each cluster label $d$.}
+    \label{tab:d-training-labels}
+\end{table}
+
+We directly implement everything for this part in PyTorch, using the Zuko library for the normalizing flows architecture \cite{rozet2024probabilists}.
+
+For optimization, we use the Adam optimizer with an initial learning rate $5\times 10^{-3}$ and an exponential decay schedule with final learning rate $10^{-3}$. For all SVI parameters, we clip gradient norms at $100$, and all classification parameters at $10$. The $\svn$ training process is run for $500$ iterations, and the $\qvn$ training process is run for $1000$ iterations, where $\phi$ is frozen at step $500$ to allow some time for $\nu$ and $\gamma$ to fully stabilize.
